@@ -2,6 +2,7 @@ using Silk.NET.Maths;
 
 namespace TheAdventure.Models;
 
+
 public class PlayerObject : RenderableGameObject
 {
     private const int _speed = 128; // pixels per second
@@ -25,6 +26,9 @@ public class PlayerObject : RenderableGameObject
     }
 
     public (PlayerState State, PlayerStateDirection Direction) State { get; private set; }
+
+    public event Action OnGameOverAnimationComplete;
+    private bool _gameOverScreenShown = false;
 
     public PlayerObject(SpriteSheet spriteSheet, int x, int y) : base(spriteSheet, (x, y))
     {
@@ -86,6 +90,11 @@ public class PlayerObject : RenderableGameObject
     {
         if (State.State == PlayerState.GameOver)
         {
+            if (SpriteSheet.AnimationFinished && !_gameOverScreenShown)
+            {
+                _gameOverScreenShown = true;
+                OnGameOverAnimationComplete?.Invoke();
+            }
             return;
         }
 

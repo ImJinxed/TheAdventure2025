@@ -21,12 +21,12 @@ public unsafe class GameRenderer
     public GameRenderer(Sdl sdl, GameWindow window)
     {
         _sdl = sdl;
-        
-        _renderer = (Renderer*)window.CreateRenderer();
-        _sdl.SetRenderDrawBlendMode(_renderer, BlendMode.Blend);
-        
         _window = window;
-        var windowSize = window.Size;
+
+        _renderer = (Renderer*)_window.CreateRenderer();
+        _sdl.SetRenderDrawBlendMode(_renderer, BlendMode.Blend);
+
+        var windowSize = _window.Size;
         _camera = new Camera(windowSize.Width, windowSize.Height);
     }
 
@@ -45,31 +45,39 @@ public unsafe class GameRenderer
         using (var fStream = new FileStream(fileName, FileMode.Open))
         {
             var image = Image.Load<Rgba32>(fStream);
-            textureInfo = new TextureData()
+            textureInfo = new TextureData
             {
                 Width = image.Width,
                 Height = image.Height
             };
+
             var imageRAWData = new byte[textureInfo.Width * textureInfo.Height * 4];
             image.CopyPixelDataTo(imageRAWData.AsSpan());
+
             fixed (byte* data = imageRAWData)
             {
-                var imageSurface = _sdl.CreateRGBSurfaceWithFormatFrom(data, textureInfo.Width,
-                    textureInfo.Height, 8, textureInfo.Width * 4, (uint)PixelFormatEnum.Rgba32);
+                var imageSurface = _sdl.CreateRGBSurfaceWithFormatFrom(
+                    data,
+                    textureInfo.Width,
+                    textureInfo.Height,
+                    32, // bits per pixel
+                    textureInfo.Width * 4,
+                    (uint)PixelFormatEnum.Rgba32
+                );
+
                 if (imageSurface == null)
                 {
                     throw new Exception("Failed to create surface from image data.");
                 }
-                
+
                 var imageTexture = _sdl.CreateTextureFromSurface(_renderer, imageSurface);
+                _sdl.FreeSurface(imageSurface);
+
                 if (imageTexture == null)
                 {
-                    _sdl.FreeSurface(imageSurface);
                     throw new Exception("Failed to create texture from surface.");
                 }
-                
-                _sdl.FreeSurface(imageSurface);
-                
+
                 _textureData[_textureId] = textureInfo;
                 _texturePointers[_textureId] = (IntPtr)imageTexture;
             }
@@ -89,6 +97,32 @@ public unsafe class GameRenderer
                 angle,
                 in center, flip);
         }
+    }
+
+    public void RenderStaticGameOverImage(string imagePath = "./Assets/gameover.png")
+    {
+        if (!File.Exists(imagePath))
+        {
+            Console.WriteLine($"Game Over screen image not found: {imagePath}");
+            return;
+        }
+
+        TextureData imgData;
+        int textureId = LoadTexture(imagePath, out imgData);
+
+        var windowSize = _window.Size;
+
+        // Source rect: full image
+        Rectangle<int> src = new Rectangle<int>(0, 0, imgData.Width, imgData.Height);
+
+        // Scale image to fit window size
+        Rectangle<int> dst = new Rectangle<int>(0, 0, windowSize.Width, windowSize.Height);
+
+        // Clear background to match pixel style (light blue)
+        _sdl.SetRenderDrawColor(_renderer, 149, 228, 240, 255);
+        _sdl.RenderClear(_renderer);
+
+        RenderTexture(textureId, src, dst);
     }
 
     public Vector2D<int> ToWorldCoordinates(int x, int y)

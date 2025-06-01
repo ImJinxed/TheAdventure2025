@@ -34,6 +34,12 @@ public class Engine
     {
         _player = new(SpriteSheet.Load(_renderer, "Player.json", "Assets"), 100, 100);
 
+        _player.OnGameOverAnimationComplete += () =>
+        {
+            GameManager.TriggerGameOver();
+        };
+
+
         var levelContent = File.ReadAllText(Path.Combine("Assets", "terrain.tmj"));
         var level = JsonSerializer.Deserialize<Level>(levelContent);
         if (level == null)
@@ -113,6 +119,13 @@ public class Engine
     {
         _renderer.SetDrawColor(0, 0, 0, 255);
         _renderer.ClearScreen();
+
+        if (GameManager.IsGameOver)
+        {
+            _renderer.RenderStaticGameOverImage();
+            _renderer.PresentFrame();
+            return;
+        }
 
         var playerPosition = _player!.Position;
         _renderer.CameraLookAt(playerPosition.X, playerPosition.Y);
