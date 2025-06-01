@@ -24,6 +24,7 @@
 
     <ItemGroup>
       <Compile Remove="Assets\Scripts\RandomBomb.script.cs" />
+      <Compile Remove="Assets\Scripts\RandomCoin.script.cs" />
       <ClCompile Include="Assets\Scripts\RandomBomb.script.cs" />
     </ItemGroup>
 

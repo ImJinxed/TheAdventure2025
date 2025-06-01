@@ -1,0 +1,25 @@
+{
+  "rowCount": 1,
+  "columnCount": 5,
+  "frameWidth": 20,
+  "frameHeight": 64,
+  "frameCenter": {
+    "offsetX": 8,
+    "offsetY": 48
+  },
+  "fileName": "CoinIdle.png",
+  "animations": {
+    "Idle": {
+      "startFrame": {
+        "row": 0,
+        "col": 0
+      },
+      "endFrame": {
+        "row": 0,
+        "col": 5
+      },
+      "durationMs": 2000,
+      "loop": true
+    }
+  }
+}

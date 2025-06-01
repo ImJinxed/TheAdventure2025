@@ -100,6 +100,7 @@ public class Engine
         double right = _input.IsRightPressed() ? 1.0 : 0.0;
         bool isAttacking = _input.IsKeyAPressed() && (up + down + left + right <= 1);
         bool addBomb = _input.IsKeyBPressed();
+        bool addCoin = _input.IsKeyAPressed();
 
         _player.UpdatePosition(up, down, left, right, 48, 48, msSinceLastFrame);
         if (isAttacking)
@@ -112,6 +113,11 @@ public class Engine
         if (addBomb)
         {
             AddBomb(_player.Position.X, _player.Position.Y, false);
+        }
+
+        if (addCoin)
+        {
+            AddCoin(_player.Position.X, _player.Position.Y, false);
         }
     }
 
@@ -228,4 +234,16 @@ public class Engine
         TemporaryGameObject bomb = new(spriteSheet, 2.1, (worldCoords.X, worldCoords.Y));
         _gameObjects.Add(bomb.Id, bomb);
     }
+
+    public void AddCoin(int X, int Y, bool translateCoordinates = true)
+    {
+        var worldCoords = translateCoordinates ? _renderer.ToWorldCoordinates(X, Y) : new Vector2D<int>(X, Y);
+
+        SpriteSheet spriteSheet = SpriteSheet.Load(_renderer, "CoinIdle.json", "Assets");
+        spriteSheet.ActivateAnimation("Idle");
+
+        TemporaryGameObject coin = new(spriteSheet, 2.1, (worldCoords.X, worldCoords.Y));
+        _gameObjects.Add(coin.Id, coin);
+    }
+
 }
